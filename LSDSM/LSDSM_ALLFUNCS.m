@@ -857,19 +857,19 @@ classdef LSDSM_ALLFUNCS
             %   including number of iterations, maximum parameter 
             %   difference for stopping criteria, initial parameters, fixed
             %   parameters, and boolean for modified filter equations
+            %   max_censor_time - (double) Indicates the maximum time to
+            %   observe every patient
             %
             % OUTPUT:
             %   model_coef_est_out - (struct) Estimated Parameters
-            %   max_iter - (int32) Number of EM iterations executed
+            %   max_iter - (double) Number of EM iterations executed
             %   param_traj_tmp - (struct) Evolution of parameter values
             %   over EM iterations
-            %   RTS_arrs - 
-            %
-            % ASSUMPTIONS AND LIMITATIONS:
-            %   None
+            %   RTS_arrs - (struct) Contains the filtered and smoothed
+            %   outputs of the hidden state trajectories.
             %
             % REVISION HISTORY:
-            %   16/12/2022 - mcauchi1
+            %   17/12/2022 - mcauchi1
             %       * Initial implementation
             %
 
