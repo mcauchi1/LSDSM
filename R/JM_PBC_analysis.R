@@ -6,11 +6,8 @@ replace_empty_with_zero <- function(x) {
   x
 }
 
-library("MASS")
 library("splines")
 library("JMbayes")
-library("xtable")
-library("lattice")
 library("dplyr")
 library("tidyverse")
 library("stringr")
