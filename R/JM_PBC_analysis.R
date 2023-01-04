@@ -34,7 +34,7 @@ MCMC_burnin <- 10000
 
 # rand_int_only <- 0 means use random effects across all basis functions
 #               <- 1 means use random effects at intercept only
-rand_int_only <- 1
+rand_int_only <- 0
 
 ## testing controls
 Delta_t <- 0.5 # spacing for the horizons

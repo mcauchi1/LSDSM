@@ -40,7 +40,7 @@ dim_size.base_cov = csv_controls.bio_long_col_no - csv_controls.base_cov_col_no 
 landmark_t_arr = [5.5 7.5 9.5] * csv_controls.t_multiplier;
 horizon_to_test = 2 * csv_controls.t_multiplier;
 
-[data_observed, csv_controls] = LSDSM_ALLFUNCS.read_from_csv(M_train, dim_size, csv_controls);
+data_observed = LSDSM_ALLFUNCS.read_from_csv(M_train, dim_size, csv_controls);
 
 
 %% 2. Train the model
@@ -53,9 +53,9 @@ model_coef_init = LSDSM_ALLFUNCS.initialise_params(dim_size, data_observed, Delt
 C_init = [1 0]; % Keep C fixed
 % Control which parameters to keep fixed by replacing NaN with a matrix
 fixed_params = struct('A', NaN, 'C', C_init, ...
-                      'Gamma', NaN, 'Sigma', NaN, ...
+                      'W', NaN, 'V', NaN, ...
                       'g_s', NaN, 'a_s', NaN, ...
-                      'mu_0', NaN, 'V_0', NaN);
+                      'mu_0', NaN, 'W_0', NaN);
 
 % EM controls
 controls.init_params = model_coef_init;
@@ -114,11 +114,11 @@ figure;
 plot(1:max_iter_reached, squeeze(param_traj.A(1,1,1:max_iter_reached)));
 hold on;
 plot(1:max_iter_reached, squeeze(param_traj.C(1,1,1:max_iter_reached)));
-plot(1:max_iter_reached, squeeze(param_traj.Gamma(1,1,1:max_iter_reached)));
-plot(1:max_iter_reached, squeeze(param_traj.Sigma(1,1,1:max_iter_reached)));
+plot(1:max_iter_reached, squeeze(param_traj.W(1,1,1:max_iter_reached)));
+plot(1:max_iter_reached, squeeze(param_traj.V(1,1,1:max_iter_reached)));
 plot(1:max_iter_reached, squeeze(param_traj.g_s(1,1,1:max_iter_reached)));
 plot(1:max_iter_reached, squeeze(param_traj.a_s(1,1,1:max_iter_reached)));
-legend('A_{11}', 'C_{11}', '\Gamma_{11}', '\Sigma_{11}', '\gamma_{1}', '\alpha_{1}');
+legend('A_{11}', 'C_{11}', 'W_{11}', 'V_{11}', '\gamma_{1}', '\alpha_{1}');
 xlabel('EM iteration');
 ylabel('Parameter Values');
 
@@ -152,7 +152,7 @@ for l_var=1:length(landmark_t_arr)
     % +1 due to index starts from 1
     csv_controls.landmark_idx = int64(landmark_t / csv_controls.Delta) + 1;
     
-    [test_data_observed, csv_controls] = LSDSM_ALLFUNCS.read_from_csv(M_test, dim_size, csv_controls);
+    test_data_observed = LSDSM_ALLFUNCS.read_from_csv(M_test, dim_size, csv_controls);
 
     %% 4a. Performance Metrics - Time-dependent Brier Score
 

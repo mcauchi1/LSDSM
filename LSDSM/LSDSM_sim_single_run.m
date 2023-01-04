@@ -12,9 +12,9 @@ t_all = linspace(0, Delta * (no_of_t_points-1), no_of_t_points); % Define the ti
 t_multiplier = 1; % survival time (in months) = surv_time * t_multiplier
 
 % Additional information
-no_of_pat = 50; % number of patients
+no_of_pat_train = 50; % number of patients
 no_of_obs = 1; % number of different biomarkers captured
-frac_miss_data = 0; % fraction of missing data (0.25 for 25% missing data)
+frac_miss_data_train = 0; % fraction of missing data (0.25 for 25% missing data)
 range_cens = [10 110]; % uniform censoring range
 
 % Controls and testing variables
@@ -22,7 +22,7 @@ norm_bool = 0; % If set to 1, this will normalise the biomarker measurements
 rand_boolean = 0; % used to randomise every single simulation created
 % If set to 0, the random functions will generate the same numbers every
 % time the simulation function is run.
-no_of_plots = min(5, no_of_pat); % plot a maximum of 5 figures
+no_of_plots = min(5, no_of_pat_train); % plot a maximum of 5 figures
 allow_pat_plots = 0; % when =1, will plot patient plots
 landmark_t_arr = [10 20 30] * t_multiplier; % Landmarks to test
 horizon_to_test = 10 * t_multiplier; % Horizons to test
@@ -34,15 +34,15 @@ if no_of_obs==1
     A = [a_bar;
          eye(size(a_bar,1)) zeros(size(a_bar,1), size(a_bar,2) - size(a_bar,1))];
     C = eye(size(a_bar));
-    Gamma = (0.5)^2 * eye(size(a_bar, 1));
-    Sigma = (0.5)^2 * eye(size(C,1), size(C,1));
+    W = (0.5)^2 * eye(size(a_bar, 1));
+    V = (0.5)^2 * eye(size(C,1), size(C,1));
     G_mat = [eye(size(a_bar,1));
              zeros(size(a_bar,2)-size(a_bar,1))]; % fixed
     
     % Initial state parameters
     x0 = [10;
           5];
-    V0 = (0.5)^2 * eye(size(x0, 1));
+    W0 = (0.5)^2 * eye(size(x0, 1));
 
     % survival parameters
     g_s = [1.75];
@@ -56,8 +56,8 @@ elseif no_of_obs==2
     A = [a_bar;
          eye(size(a_bar,1)) zeros(size(a_bar,1), size(a_bar,2) - size(a_bar,1))];
     C = eye(size(a_bar));
-    Gamma = (0.5)^2 * eye(size(a_bar, 1));
-    Sigma = (0.5)^2 * eye(size(C,1), size(C,1));
+    W = (0.5)^2 * eye(size(a_bar, 1));
+    V = (0.5)^2 * eye(size(C,1), size(C,1));
     G_mat = [eye(size(a_bar,1));
              zeros(size(a_bar,2)-size(a_bar,1))];
          
@@ -66,7 +66,7 @@ elseif no_of_obs==2
           7.5;
           5;
           2.5];
-    V0 = (0.5)^2 * eye(size(x0, 1));
+    W0 = (0.5)^2 * eye(size(x0, 1));
 
     % Survival parameters
     g_s = [1];
@@ -77,9 +77,9 @@ elseif no_of_obs==2
 end
 
 % Model parameters are placed in a struct data structure
-true_model_coef = struct('A', A, 'C', C, 'Gamma', Gamma, 'Sigma', Sigma, ...
+true_model_coef = struct('A', A, 'C', C, 'W', W, 'V', V, ...
                          'g_s', g_s, 'a_s', a_s, 'DeltaT', Delta, 'G_mat', G_mat, ...
-                         'mu_0', x0, 'V_0', V0);
+                         'mu_0', x0, 'W_0', W0);
 
 % Simulate all patient information (longitudinal and survival data)
 dim_size.states = size(x0,1);
@@ -91,7 +91,7 @@ censor_time = no_of_t_points;
 
 % Create simulations with the above specifications
 [data_latent, data_observed] = ...
-            LSDSM_ALLFUNCS.sim_obs_surv_pat(no_of_pat, censor_time, true_model_coef, frac_miss_data, range_cens, rand_boolean);
+            LSDSM_ALLFUNCS.sim_obs_surv_pat(no_of_pat_train, censor_time, true_model_coef, frac_miss_data_train, range_cens, rand_boolean);
 
 % Plot patient's hidden states and hazard function
 if allow_pat_plots
@@ -130,9 +130,9 @@ model_coef_init = LSDSM_ALLFUNCS.initialise_params(dim_size, data_observed, Delt
 
 % Control which parameters to keep fixed by replacing NaN with a matrix
 fixed_params = struct('A', NaN, 'C', C, ...
-                      'Gamma', NaN, 'Sigma', NaN, ...
+                      'W', NaN, 'V', NaN, ...
                       'g_s', NaN, 'a_s', NaN, ...
-                      'mu_0', NaN, 'V_0', NaN);
+                      'mu_0', NaN, 'W_0', NaN);
 
 controls.init_params = model_coef_init;
 controls.fixed_params = fixed_params;
@@ -189,21 +189,21 @@ figure;
 plot(1:max_iter_reached, squeeze(param_traj.A(1,1,1:max_iter_reached)));
 hold on;
 plot(1:max_iter_reached, squeeze(param_traj.C(1,1,1:max_iter_reached)));
-plot(1:max_iter_reached, squeeze(param_traj.Gamma(1,1,1:max_iter_reached)));
-plot(1:max_iter_reached, squeeze(param_traj.Sigma(1,1,1:max_iter_reached)));
+plot(1:max_iter_reached, squeeze(param_traj.W(1,1,1:max_iter_reached)));
+plot(1:max_iter_reached, squeeze(param_traj.V(1,1,1:max_iter_reached)));
 plot(1:max_iter_reached, squeeze(param_traj.g_s(1,1,1:max_iter_reached)));
 plot(1:max_iter_reached, squeeze(param_traj.a_s(1,1,1:max_iter_reached)));
-legend('A_{11}', 'C_{11}', '\Gamma_{11}', '\Sigma_{11}', '\gamma_{1}', '\alpha_{1}');
+legend('A_{11}', 'C_{11}', 'W_{11}', 'V_{11}', '\gamma_{1}', '\alpha_{1}');
 xlabel('EM iteration');
 ylabel('Parameter Values');
 
 
 % Calculate the mu values using the true parameters model
 RTS_true.mu_tilde = zeros(size(RTS_traj.mu_tilde));
-for i=1:no_of_pat
+for i=1:no_of_pat_train
     pat_ii = data_observed(i);
     pat_ii.mu_0 = true_model_coef.mu_0;
-    pat_ii.V_0 = true_model_coef.V_0;
+    pat_ii.W_0 = true_model_coef.W_0;
     [RTS_true.mu_tilde(:,:,:,i), V_tilde, log_like_val] = LSDSM_ALLFUNCS.Kalman_filter(pat_ii, true_model_coef, ...
                                                                             censor_time, controls.mod_KF);
 end
@@ -221,9 +221,9 @@ est_rmse_states = LSDSM_ALLFUNCS.find_rmse_states(data_latent, data_observed, RT
 % extract hidden states into a multi-dimensional array
 x_true_mat = LSDSM_ALLFUNCS.map_struct_to_4dims_mat(data_latent, 'x_true');
 % calculate the true, true model, and estimated, survival curves
-true_surv_fn = LSDSM_ALLFUNCS.surv_curve_filt(true_model_coef, data_observed, x_true_mat);
-true_model_surv_fn = LSDSM_ALLFUNCS.surv_curve_filt(true_model_coef, data_observed, RTS_true.mu_tilde);
-est_surv_fn = LSDSM_ALLFUNCS.surv_curve_filt(model_coef_est, data_observed, RTS_traj.mu_tilde);
+true_surv_fn = LSDSM_ALLFUNCS.surv_curve_calc(true_model_coef, data_observed, x_true_mat);
+true_model_surv_fn = LSDSM_ALLFUNCS.surv_curve_calc(true_model_coef, data_observed, RTS_true.mu_tilde);
+est_surv_fn = LSDSM_ALLFUNCS.surv_curve_calc(model_coef_est, data_observed, RTS_traj.mu_tilde);
 
 % RMSE for true and estimated models for survival curves
 true_model_rmse_surv = LSDSM_ALLFUNCS.find_rmse_surv(true_surv_fn, data_observed, true_model_surv_fn);
@@ -231,9 +231,8 @@ est_rmse_surv = LSDSM_ALLFUNCS.find_rmse_surv(true_surv_fn, data_observed, est_s
 
 %% 4. Simulate test data
 
-% Set same initial conditions for all patients
 no_of_pat_test = 200;
-frac_miss_data_test = frac_miss_data;
+frac_miss_data_test = frac_miss_data_train;
 
 % Create simulations for testing
 [test_data_latent, test_data_observed] = ...

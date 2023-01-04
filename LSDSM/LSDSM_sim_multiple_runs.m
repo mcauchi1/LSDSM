@@ -14,7 +14,7 @@ t_all = linspace(0, Delta * (no_of_t_points-1), no_of_t_points); % Define the ti
 t_multiplier = 1; % survival time (in months) = surv_time * t_multiplier
 
 % Additional information
-no_of_obs = 2; % number of different biomarkers captured
+no_of_obs = 1; % number of different biomarkers captured
 frac_miss_data = 0; % fraction of missing data (0.25 for 25% missing data)
 range_cens = [10 110]; % uniform censoring range
 
@@ -34,15 +34,15 @@ if no_of_obs==1
     A = [a_bar;
          eye(size(a_bar,1)) zeros(size(a_bar,1), size(a_bar,2) - size(a_bar,1))];
     C = eye(size(a_bar));
-    Gamma = (0.5)^2 * eye(size(a_bar, 1));
-    Sigma = (0.5)^2 * eye(size(C,1), size(C,1));
+    W = (0.5)^2 * eye(size(a_bar, 1));
+    V = (0.5)^2 * eye(size(C,1), size(C,1));
     G_mat = [eye(size(a_bar,1));
              zeros(size(a_bar,2)-size(a_bar,1))]; % fixed
     
     % Initial state parameters
     x0 = [10;
           5];
-    V0 = (0.5)^2 * eye(size(x0, 1));
+    W0 = (0.5)^2 * eye(size(x0, 1));
 
     % survival parameters
     g_s = [1.75];
@@ -56,8 +56,8 @@ elseif no_of_obs==2
     A = [a_bar;
          eye(size(a_bar,1)) zeros(size(a_bar,1), size(a_bar,2) - size(a_bar,1))];
     C = eye(size(a_bar));
-    Gamma = (0.5)^2 * eye(size(a_bar, 1));
-    Sigma = (0.5)^2 * eye(size(C,1), size(C,1));
+    W = (0.5)^2 * eye(size(a_bar, 1));
+    V = (0.5)^2 * eye(size(C,1), size(C,1));
     G_mat = [eye(size(a_bar,1));
              zeros(size(a_bar,2)-size(a_bar,1))];
          
@@ -66,7 +66,7 @@ elseif no_of_obs==2
           7.5;
           5;
           2.5];
-    V0 = (0.5)^2 * eye(size(x0, 1));
+    W0 = (0.5)^2 * eye(size(x0, 1));
 
     % Survival parameters
     g_s = [1];
@@ -77,9 +77,9 @@ elseif no_of_obs==2
 end
 
 % Model parameters are placed in a struct data structure
-true_model_coef = struct('A', A, 'C', C, 'Gamma', Gamma, 'Sigma', Sigma, ...
+true_model_coef = struct('A', A, 'C', C, 'W', W, 'V', V, ...
                          'g_s', g_s, 'a_s', a_s, 'DeltaT', Delta, 'G_mat', G_mat, ...
-                         'mu_0', x0, 'V_0', V0);
+                         'mu_0', x0, 'W_0', W0);
 
 % Simulate all patient information (longitudinal and survival data)
 dim_size.states = size(x0,1);
@@ -93,9 +93,9 @@ no_of_pat_arr = [10, 20, 50, 100, 150, 200, 300, 500, 750, 1000];
 
 % Controls to split the simulations into separate executions - do not clear
 % variables between runs
-no_of_runs = 1; % the number of runs to perform in this execution
+no_of_runs = 2; % the number of runs to perform in this execution
 max_no_of_runs = 10; % the number of runs planned
-offset_no = 0;
+offset_no = 1;
 
 % If we are starting a fresh set of simulations
 if offset_no == 0
@@ -115,8 +115,8 @@ if offset_no == 0
 
     % We can store parameters across different runs for comparison
     A_est_runs_arr = zeros(dim_size.states,dim_size.states,max_no_of_runs,length(no_of_pat_arr));
-    Gamma_est_runs_arr = zeros(dim_size.dyn_states,dim_size.dyn_states,max_no_of_runs,length(no_of_pat_arr));
-    Sigma_est_runs_arr = zeros(dim_size.y,dim_size.y,max_no_of_runs,length(no_of_pat_arr));
+    W_est_runs_arr = zeros(dim_size.dyn_states,dim_size.dyn_states,max_no_of_runs,length(no_of_pat_arr));
+    V_est_runs_arr = zeros(dim_size.y,dim_size.y,max_no_of_runs,length(no_of_pat_arr));
     g_s_est_runs_arr = zeros(dim_size.base_cov,1,max_no_of_runs,length(no_of_pat_arr));
     a_s_est_runs_arr = zeros(dim_size.states,1,max_no_of_runs,length(no_of_pat_arr));
     mu_0_est_runs_arr = zeros(dim_size.states,1,max_no_of_runs,length(no_of_pat_arr));
@@ -153,9 +153,9 @@ for iter_no=1:length(no_of_pat_arr)
 
         % Control which parameters to keep fixed by replacing NaN with a matrix
         fixed_params = struct('A', NaN, 'C', C, ...
-                              'Gamma', NaN, 'Sigma', NaN, ...
+                              'W', NaN, 'V', NaN, ...
                               'g_s', NaN, 'a_s', NaN, ...
-                              'mu_0', NaN, 'V_0', NaN);
+                              'mu_0', NaN, 'W_0', NaN);
 
         controls.init_params = model_coef_init;
         controls.fixed_params = fixed_params;
@@ -207,11 +207,11 @@ for iter_no=1:length(no_of_pat_arr)
         plot(1:max_iter_reached, squeeze(param_traj.A(1,1,1:max_iter_reached)));
         hold on;
         plot(1:max_iter_reached, squeeze(param_traj.C(1,1,1:max_iter_reached)));
-        plot(1:max_iter_reached, squeeze(param_traj.Gamma(1,1,1:max_iter_reached)));
-        plot(1:max_iter_reached, squeeze(param_traj.Sigma(1,1,1:max_iter_reached)));
+        plot(1:max_iter_reached, squeeze(param_traj.W(1,1,1:max_iter_reached)));
+        plot(1:max_iter_reached, squeeze(param_traj.V(1,1,1:max_iter_reached)));
         plot(1:max_iter_reached, squeeze(param_traj.g_s(1,1,1:max_iter_reached)));
         plot(1:max_iter_reached, squeeze(param_traj.a_s(1,1,1:max_iter_reached)));
-        legend('A_{11}', 'C_{11}', '\Gamma_{11}', '\Sigma_{11}', '\gamma_{1}', '\alpha_{1}');
+        legend('A_{11}', 'C_{11}', 'W_{11}', 'V_{11}', '\gamma_{1}', '\alpha_{1}');
         xlabel('EM iteration');
         ylabel('Parameter Values');
         
@@ -220,15 +220,15 @@ for iter_no=1:length(no_of_pat_arr)
         for i=1:no_of_pat
             pat_ii = data_observed(i);
             pat_ii.mu_0 = true_model_coef.mu_0;
-            pat_ii.V_0 = true_model_coef.V_0;
+            pat_ii.W_0 = true_model_coef.W_0;
             [RTS_true.mu_tilde(:,:,:,i), V_tilde, log_like_val] = LSDSM_ALLFUNCS.Kalman_filter(pat_ii, true_model_coef, ...
                                                                                     censor_time, controls.mod_KF);
         end
         
         % Store results for training
         A_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.A;
-        Gamma_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.Gamma;
-        Sigma_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.Sigma;
+        W_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.W;
+        V_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.V;
         g_s_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.g_s;
         a_s_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.a_s;
         mu_0_est_runs_arr(:,:,run_no,iter_no) = model_coef_est.mu_0;
@@ -271,7 +271,7 @@ for iter_no=1:length(no_of_pat_arr)
         % Set same initial conditions for all patients
         no_of_pat_test = no_of_pat;
         x0_test = x0;
-        V0_test = V0;
+        W0_test = W0;
         frac_miss_data_test = frac_miss_data;
 
         % Create simulations for testing
