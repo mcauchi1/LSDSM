@@ -3,7 +3,6 @@ classdef LSDSM_ALLFUNCS
         
         % All functions used for LSDSM are stored within this class
         
-        % Function to convert csv to required data structure
         function [data_observed] = read_from_csv(M_mat, dim_size, csv_controls)
             % FUNCTION NAME:
             %   read_from_csv
@@ -166,7 +165,6 @@ classdef LSDSM_ALLFUNCS
         end
         
         
-        % Data simulation
         function [data_latent, data_observed] = ...
             sim_obs_surv_pat(num_pats, cens_time, model_true, frac_miss, cens_range, rand_bool)
             % FUNCTION NAME:
@@ -452,7 +450,7 @@ classdef LSDSM_ALLFUNCS
         
         
         function [model_coef_init] = initialise_params(dim_size, data_observed, Delta)
-                        % FUNCTION NAME:
+            % FUNCTION NAME:
             %   initialise_params
             %
             % DESCRIPTION:
@@ -1279,8 +1277,13 @@ classdef LSDSM_ALLFUNCS
             param_traj.V = zeros(dim_size.y, dim_size.y, controls.EM_iters);
             param_traj.g_s = zeros(size(pat_data(1).base_cov,1), 1, controls.EM_iters);
             param_traj.a_s = zeros(dim_size.states, 1, controls.EM_iters);
-            param_traj.mu_0 = zeros(dim_size.states, 1, num_pats, controls.EM_iters);
-            param_traj.W_0 = zeros(dim_size.states, dim_size.states, num_pats, controls.EM_iters);
+            if controls.update_pop_mu % If we're updating global initial conditions
+                param_traj.mu_0 = zeros(dim_size.states, 1, controls.EM_iters);
+                param_traj.W_0 = zeros(dim_size.states, dim_size.states, controls.EM_iters);
+            else
+                param_traj.mu_0 = zeros(dim_size.states, 1, num_pats, controls.EM_iters);
+                param_traj.W_0 = zeros(dim_size.states, dim_size.states, num_pats, controls.EM_iters);
+            end
             
             % Initialise the log likelihood array
             log_like_val_tot_arr = zeros(num_pats, controls.EM_iters);
@@ -1871,6 +1874,7 @@ classdef LSDSM_ALLFUNCS
             % initialise array for storing single Newton-Raphson procedure
             x_NR_tmp_arr = zeros(num_dims, max_iter);
             x_NR_tmp_arr(:,1) = init_val; % set initial value
+            
             for jj=2:max_iter % NR iterations
                 % Find the first derivative
                 df = dfdx(x_NR_tmp_arr(:,jj-1), coeffs);
@@ -2127,6 +2131,7 @@ classdef LSDSM_ALLFUNCS
                 Delta_t_tmp = pat_ii.surv_time - (j_tmp - 1) * DeltaT;
             end
         end
+        
         
         function f1out = f1x_ij(x_val, coeffs)
             % FUNCTION NAME:
