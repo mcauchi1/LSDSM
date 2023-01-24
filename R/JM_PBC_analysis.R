@@ -116,6 +116,11 @@ jointFit1 <- jointModelBayes(lmeFit, survFit, timeVar = "time",
                              n.iter = MCMC_iter, n.thin = MCMC_thin,
                              n.burnin = MCMC_burnin)
 
+# # Fit the joint model with the random effects values affecting the hazard function
+# jointFit1 <- jointModelBayes(lmeFit, survFit, timeVar = "time", param="shared-RE"
+#                              n.iter = MCMC_iter, n.thin = MCMC_thin,
+#                              n.burnin = MCMC_burnin)
+
 # find the maximum observed time and place that as the maximum censoring time
 censor_time <- floor(max(orig_df.id$EvTime))
 if (is.null(max_horizon_t)) { # if not defined
