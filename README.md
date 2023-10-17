@@ -4,7 +4,7 @@
  ## Prerequisites
   The model was created using MATLAB R2022b. Thus, a recent MATLAB version may be required for proper execution of the algorithm.
 
-  For the standard joint model on R, some packages are required for proper execution. To install these:
+  For the risk score model in R, some packages are required for proper execution. To install these:
   ```r
   install.packages("dplyr")
   install.packages("tidyverse")
