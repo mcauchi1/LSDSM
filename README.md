@@ -20,7 +20,7 @@
   This repository has 3 folders in the time of writing, being _Data_, _LSDSM_, and _R_. 
 
   _LSDSM_ folder contains 1 folder and 5 _m_ files at the time of writing:
-  - *BPC_dataset.csv* - Contains an example of how the _csv_ files should be stored based on the PBC dataset.
+  - *PBC_dataset.csv* - Contains an example of how the _csv_ files should be stored based on the PBC dataset.
   
   _LSDSM_ folder contains 1 folder and 5 _m_ files at the time of writing:
   - *sims_t30* - Contains the results obtained from the simulations at different missing data percentages.
