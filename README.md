@@ -38,9 +38,8 @@
 
  ## Versioning
  This is the first version of LSDSM being published. Future work may follow, including:
- - Introducing mixture models within LSDSM to learn different patient clusters;
  - Optimisation of the code for faster execution; and
- - Nonlinear state space models.
+ - Introducing nonlinearities.
 
  ## Authors
  - Mark Cauchi - Main Author
