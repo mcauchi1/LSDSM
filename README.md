@@ -1,5 +1,5 @@
 # Linear State space Dynamic Survival Model
- Linear State space Dynamic Survival Model (LSDSM) is a state space model that jointly models longitudinal and survival data. This framework has been created on MATLAB. This repository also contains some work in R, more specifically to split the data into training and testing sets, and to compare with a risk score: http://dx.doi.org/10.1016/j.healun.2017.04.008. The proposed model provides an alternative to risk modelling by introducing a dynamical relationship in the longitudinal sub-process to model the biomarker trajectories.
+ Linear State space Dynamic Survival Model (LSDSM) is a state space model that jointly models longitudinal and survival data. This framework has been created on MATLAB. This repository also contains some work in R, more specifically to split the data into training and testing sets, and to compare with a risk score: http://dx.doi.org/10.1016/j.healun.2017.04.008. The proposed model provides an alternative to risk modelling by introducing a dynamical relationship in the longitudinal sub-process to model the biomarker trajectories. The data used for this paper is available on The University of Sheffield's online data repository (ORDA).
 
  ## Prerequisites
   The model was created using MATLAB R2022b. Thus, a recent MATLAB version may be required for proper execution of the algorithm.
@@ -19,10 +19,8 @@
  ## Contents
   This repository has 3 folders in the time of writing, being _Data_, _LSDSM_, and _R_. 
 
-  _Data_ folder contains 2 _csv_ files at the time of writing:
-  - *PH_clean_dataset_w_sex_train_modified_join_whoFC3-4.csv* - Contains the PAH data used for the training data set. This also shows an example of how data should be stored for LSDSM - ID, event/survival time, binary variable indicating event happened, time of recording longitudinal data, baseline information, longitudinal information.
-  - *PH_clean_dataset_w_sex_test_modified_join_whoFC3-4.csv* - Contains the PAH data used for the testing data set.
-  
+  _Data_ folder contains 1 _csv_ file at the time of writing:
+  - *PBC_dataset.csv* - Contains an example of how the _csv_ files should be stored based on the PBC dataset. This also shows an example of how data should be stored for LSDSM - ID, event/survival time, binary variable indicating event happened, time of recording longitudinal data, baseline information, longitudinal information.
   _LSDSM_ folder contains 1 folder and 5 _m_ files at the time of writing:
   - *sims_t30* - Contains the results obtained from the simulations at different missing data percentages.
   - *LSDSM_MM_ALLFUNCS.m* - Contains all the functions required within a class to execute the LSDSM estimation algorithm and other analysis, such as plotting and performance evaluation.
