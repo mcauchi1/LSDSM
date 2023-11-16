@@ -9,8 +9,8 @@ rng(31);
 % Load data
 mydir  = pwd;
 idcs   = strfind(mydir,'\');
-newdir = mydir(1:idcs(end-1)-1); % go to the parent parent folder
-newdir_train = strcat(newdir, '\Data\PH_shef_clean\Anon\PH_clean_dataset_w_sex_train_modified_join_whoFC3-4.csv');
+newdir = mydir(1:idcs(end)-1); % go to the parent folder
+newdir_train = strcat(newdir, '\Data\PH_clean_dataset_w_sex_train_modified_join_whoFC3-4.csv');
 M_train = readtable(newdir_train); % store data in table
 
 ignore_all_NaNs = 0; % if 1, then when making predictions, we ignore those patients that have no observed values
@@ -130,7 +130,7 @@ model_coef_test = model_coef_est;
 model1 = model_coef_est(1);
 
 % Load test data set
-newdir_test = strcat(newdir, '\Data\PH_shef_clean\Anon\PH_clean_dataset_w_sex_test_modified_join_whoFC3-4.csv');
+newdir_test = strcat(newdir, '\Data\PH_clean_dataset_w_sex_test_modified_join_whoFC3-4.csv');
 M_test = readtable(newdir_test);
 
 csv_controls.train_test = 'test';

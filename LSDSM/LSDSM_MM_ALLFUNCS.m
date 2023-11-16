@@ -83,9 +83,23 @@ classdef LSDSM_MM_ALLFUNCS
                 data_observed = containers.Map('KeyType', 'int32', 'ValueType', 'any'); 
 
                 % Find the number of patients in the training set
-                unique_pat_id = unique(M_mat_cell(:,1));
-                no_of_pat = length(unique_pat_id);
+                if ~iscellstr(M_mat_cell(:,1)) % if ids are not strings, but numeric
+                    % convert ids to strings
+                    M_mat_cell(:, 1) = cellfun(@num2str, M_mat_cell(:, 1), 'UniformOutput', false);
+                    
+                    % Convert the cell array to a numeric array such that
+                    % it remains in numeric order
+                    numeric_array = cellfun(@str2double, M_mat_cell(:, 1));
+                    unique_pat_id = unique(numeric_array);
 
+                    % Convert the sorted numeric array back to strings
+                    unique_pat_id = strtrim(cellstr(num2str(unique_pat_id)));
+                else % if strings are used for ids
+                    unique_pat_id = unique(M_mat_cell(:,1));
+                end
+                
+                no_of_pat = length(unique_pat_id);
+                
                 for i=1:no_of_pat % for every patient
                     % Filling in patient information
                     pat_ii = struct();
@@ -3669,7 +3683,7 @@ classdef LSDSM_MM_ALLFUNCS
                 xlabel('EM iteration');
             end
         end
-        
+
         
         function update_dynamic_param_plots(EM_j, fig_cells, model_coef_est, log_like_val_tot_arr, E_c_ig_EM, param_traj)
             % FUNCTION NAME:
@@ -3709,6 +3723,9 @@ classdef LSDSM_MM_ALLFUNCS
             cla
             plot(2:EM_j, sum(log_like_val_tot_arr(:,2:EM_j), 1));
             grid on;
+            title('Log likelihood over EM iterations');
+            ylabel('Log likelihood');
+            xlabel('EM iteration');
 
             % Plot the total responsibility of every class across every EM
             % iteration
@@ -3718,6 +3735,9 @@ classdef LSDSM_MM_ALLFUNCS
             % (that sum to 1) rather than absolute values
             plot(2:EM_j, E_c_ig_EM(:,2:EM_j)' / double(num_pats));
             grid on;
+            title('Class membership over EM iterations');
+            ylabel('Class membership probability');
+            xlabel('EM iteration');
             
             % Define a set of visually distinct colours
             new_colours = {'#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#42d4f4', '#f032e6', ...
@@ -3741,6 +3761,9 @@ classdef LSDSM_MM_ALLFUNCS
                     'DisplayName', fn{k}, 'Color', new_colours{k});
                 end
                 grid on;
+                title(sprintf('Parameter estimates over EM iterations for class %d', g));
+                ylabel('Parameter values');
+                xlabel('EM iteration');
                 % Creates a legend with unique fields (does not repeat for
                 % every multipled value of a parameter (e.g. matrix)
                 legend(legendUnq(fig_cells{g+2}));
